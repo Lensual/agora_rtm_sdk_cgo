@@ -1,0 +1,11 @@
+.vscode
+__debug_bin
+
+.env
+
+# agora sdk
+agora_rtm_sdk-prefix
+agora_rtm_cache.db
+agorartmdns.dat
+agorartmreport.dat
+crash_context_v1
