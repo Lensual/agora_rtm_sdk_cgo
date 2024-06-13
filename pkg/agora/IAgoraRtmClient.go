@@ -1233,7 +1233,7 @@ func (this_ *IRtmEventHandler) OnGetUserMetadataResult(requestId uint64, userId 
  * @param userId The id of the user.
  * @param errorCode The error code.
  */
-func (this_ *IRtmEventHandler) OnSubscribeUserMetadataResult(requestId uint64, channelName string, userId string, errorCode RTM_ERROR_CODE) {
+func (this_ *IRtmEventHandler) OnSubscribeUserMetadataResult(requestId uint64, userId string, errorCode RTM_ERROR_CODE) {
 	cUserId := C.CString(userId)
 	C.C_IRtmEventHandler_onSubscribeUserMetadataResult(unsafe.Pointer(this_),
 		C.uint64_t(requestId),
