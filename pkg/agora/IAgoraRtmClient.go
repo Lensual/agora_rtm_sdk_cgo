@@ -1621,12 +1621,12 @@ func (this_ *IRtmClient) RenewToken(token string) int {
  * - 0: Success.
  * - < 0: Failure.
  */
-func (this_ *IRtmClient) Publish(channelName string, message string, length uint, option *PublishOptions, requestId *uint64) int {
+func (this_ *IRtmClient) Publish(channelName string, message []byte, length uint, option *PublishOptions, requestId *uint64) int {
 	cChannelName := C.CString(channelName)
-	cMessage := C.CString(message)
+	cMessage := C.CBytes(message)
 	ret := int(C.C_IRtmClient_publish(unsafe.Pointer(this_),
 		cChannelName,
-		cMessage,
+		(*C.char)(cMessage),
 		C.size_t(length),
 		(*C.struct_C_PublishOptions)(option),
 		(*C.uint64_t)(requestId),
