@@ -20,13 +20,13 @@ func main() {
 	rtmClient := agora.CreateAgoraRtmClient()
 	fmt.Printf("CreateAgoraRtmClient: %p\n", rtmClient) //DEBUG
 
-	rtmEventHandler := agoraBridge.NewRtmEventHandlerBridge(&RtmEventHandler{})
+	rtmEventHandler := agoraBridge.NewRtmEventHandlerBridge(&MyRtmEventHandler{})
 	fmt.Printf("NewRtmEventHandlerBridge: %p\n", rtmEventHandler) //DEBUG
 
 	rtmConfig := agora.NewRtmConfig()
 	rtmConfig.SetAppId(appId)
 	rtmConfig.SetUserId(userId)
-	rtmConfig.SetEventHandler(rtmEventHandler)
+	rtmConfig.SetEventHandler(rtmEventHandler.ToAgoraEventHandler())
 	fmt.Printf("NewRtmConfig: %+v\n", rtmConfig) //DEBUG
 
 	ret := rtmClient.Initialize(rtmConfig)
