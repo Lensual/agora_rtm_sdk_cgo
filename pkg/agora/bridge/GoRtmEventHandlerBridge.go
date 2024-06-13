@@ -125,6 +125,7 @@ void cgo_RtmEventHandlerBridge_onPresenceGetStateResult(C_RtmEventHandlerBridge 
 */
 import "C"
 import (
+	"runtime"
 	"unsafe"
 
 	"github.com/Lensual/agora_rtm_sdk_cgo/pkg/agora"
@@ -170,10 +171,26 @@ type GoIRtmEventHandler interface {
 	OnPresenceGetStateResult(requestId uint64, state *agora.UserState, errorCode agora.RTM_ERROR_CODE)
 }
 
-type RtmEventHandlerBridge C.C_RtmEventHandlerBridge
+type RtmEventHandlerBridge struct {
+	cBridge *C.C_RtmEventHandlerBridge
+	pinner  runtime.Pinner
+}
 
-func NewRtmEventHandlerBridge(handler GoIRtmEventHandler) *agora.IRtmEventHandler {
-	return (*agora.IRtmEventHandler)(C.C_RtmEventHandlerBridge_New(
+func (b *RtmEventHandlerBridge) ToAgoraEventHandler() *agora.IRtmEventHandler {
+	return (*agora.IRtmEventHandler)(b.cBridge)
+}
+
+func (b *RtmEventHandlerBridge) Delete() {
+	C.C_RtmEventHandlerBridge_Delete(unsafe.Pointer(b))
+	b.pinner.Unpin()
+	b.cBridge = nil
+}
+
+func NewRtmEventHandlerBridge(handler GoIRtmEventHandler) *RtmEventHandlerBridge {
+	b := RtmEventHandlerBridge{}
+	userData := unsafe.Pointer(&handler)
+	b.pinner.Pin(userData)
+	b.cBridge = (*C.C_RtmEventHandlerBridge)(C.C_RtmEventHandlerBridge_New(
 		C.C_RtmEventHandlerBridge_Callbacks{
 			onMessageEvent:                C.C_RtmEventHandlerBridge_onMessageEvent(C.cgo_RtmEventHandlerBridge_onMessageEvent),
 			onPresenceEvent:               C.C_RtmEventHandlerBridge_onPresenceEvent(C.cgo_RtmEventHandlerBridge_onPresenceEvent),
@@ -213,8 +230,9 @@ func NewRtmEventHandlerBridge(handler GoIRtmEventHandler) *agora.IRtmEventHandle
 			onPresenceRemoveStateResult:   C.C_RtmEventHandlerBridge_onPresenceRemoveStateResult(C.cgo_RtmEventHandlerBridge_onPresenceRemoveStateResult),
 			onPresenceGetStateResult:      C.C_RtmEventHandlerBridge_onPresenceGetStateResult(C.cgo_RtmEventHandlerBridge_onPresenceGetStateResult),
 		},
-		unsafe.Pointer(&handler),
+		userData,
 	))
+	return &b
 }
 
 //export cgo_RtmEventHandlerBridge_onMessageEvent
