@@ -1530,7 +1530,7 @@ func (this_ *IRtmClient) Initialize(config *RtmConfig) int {
  * - 0: Success.
  * - < 0: Failure.
  */
-func (this_ *IRtmClient) Release(config *RtmConfig) int {
+func (this_ *IRtmClient) Release() int {
 	return int(C.C_IRtmClient_release(unsafe.Pointer(this_)))
 }
 
@@ -1578,7 +1578,7 @@ func (this_ *IRtmClient) GetStorage() *IRtmStorage {
  * @return
  * - return NULL if error occurred
  */
-func (this_ *IRtmClient) GetLock(config *RtmConfig) *IRtmLock {
+func (this_ *IRtmClient) GetLock() *IRtmLock {
 	return (*IRtmLock)(C.C_IRtmClient_getLock(unsafe.Pointer(this_)))
 }
 
@@ -1588,7 +1588,7 @@ func (this_ *IRtmClient) GetLock(config *RtmConfig) *IRtmLock {
  * @return
  * - return NULL if error occurred
  */
-func (this_ *IRtmClient) GetPresence(config *RtmConfig) *IRtmPresence {
+func (this_ *IRtmClient) GetPresence() *IRtmPresence {
 	return (*IRtmPresence)(C.C_IRtmClient_getPresence(unsafe.Pointer(this_)))
 }
 
