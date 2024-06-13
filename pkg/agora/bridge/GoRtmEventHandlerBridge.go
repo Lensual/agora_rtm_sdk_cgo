@@ -141,7 +141,7 @@ type GoIRtmEventHandler interface {
 	OnJoinTopicResult(requestId uint64, channelName string, userId string, topic string, meta string, errorCode agora.RTM_ERROR_CODE)
 	OnLeaveTopicResult(requestId uint64, channelName string, userId string, topic string, meta string, errorCode agora.RTM_ERROR_CODE)
 	OnSubscribeTopicResult(requestId uint64, channelName string, userId string, topic string, succeedUsers agora.UserList, failedUsers agora.UserList, errorCode agora.RTM_ERROR_CODE)
-	OnConnectionStateChanged(channelName string, state agora.CONNECTION_STATE, reason agora.RTM_CONNECTION_CHANGE_REASON)
+	OnConnectionStateChanged(channelName string, state agora.RTM_CONNECTION_STATE, reason agora.RTM_CONNECTION_CHANGE_REASON)
 	OnTokenPrivilegeWillExpire(channelName string)
 	OnSubscribeResult(requestId uint64, channelName string, errorCode agora.RTM_ERROR_CODE)
 	OnPublishResult(requestId uint64, errorCode agora.RTM_ERROR_CODE)
@@ -374,7 +374,7 @@ func cgo_RtmEventHandlerBridge_onConnectionStateChanged(_ *C.C_RtmEventHandlerBr
 	handler := *(*GoIRtmEventHandler)(userData)
 	handler.OnConnectionStateChanged(
 		C.GoString(channelName),
-		agora.CONNECTION_STATE(state),
+		agora.RTM_CONNECTION_STATE(state),
 		agora.RTM_CONNECTION_CHANGE_REASON(reason),
 	)
 }
