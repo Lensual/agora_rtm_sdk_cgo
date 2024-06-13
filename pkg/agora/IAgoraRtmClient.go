@@ -274,15 +274,18 @@ func (this_ *MessageEvent) SetChannelTopic(channelTopic string) {
 /**
  * The payload
  */
-func (this_ *MessageEvent) GetMessage() string {
-	return C.GoString(this_.message)
+func (this_ *MessageEvent) GetMessage() []byte {
+	return C.GoBytes(
+		unsafe.Pointer(this_.message),
+		C.int(this_.GetMessageLength()),
+	)
 }
 
 /**
  * The payload
  */
-func (this_ *MessageEvent) SetMessage(message string) {
-	this_.message = C.CString(message)
+func (this_ *MessageEvent) SetMessage(message []byte) {
+	this_.message = (*C.char)(C.CBytes(message))
 }
 
 /**
