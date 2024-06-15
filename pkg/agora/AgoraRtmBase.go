@@ -794,6 +794,10 @@ const (
 	 * 1: Link with http proxy
 	 */
 	RTM_PROXY_TYPE_HTTP RTM_PROXY_TYPE = C.RTM_PROXY_TYPE_HTTP
+	/**
+	 * 2: Link with tcp cloud proxy
+	 */
+	RTM_PROXY_TYPE_CLOUD_TCP RTM_PROXY_TYPE = C.RTM_PROXY_TYPE_CLOUD_TCP
 )
 
 /*
