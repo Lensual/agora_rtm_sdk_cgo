@@ -2,12 +2,12 @@ package agora
 
 /*
 //引入Agora C封装
-#cgo CFLAGS: -I${SRCDIR}/../../../agora_rtm_sdk_c/include
-#cgo LDFLAGS: -L${SRCDIR}/../../../agora_rtm_sdk_c -lagora_rtm_sdk_c -lstdc++
+#cgo CFLAGS: -I${SRCDIR}/../../third_party/agora_rtm_sdk_c/include
+#cgo LDFLAGS: -L${SRCDIR}/../../third_party/agora_rtm_sdk_c -lagora_rtm_sdk_c -lstdc++
 
 //链接AgoraRTM SDK
-#cgo CFLAGS: -I${SRCDIR}/../../../agora_rtm_sdk/libs/include
-#cgo LDFLAGS: -L${SRCDIR}/../../../agora_rtm_sdk/libs -lagora_rtm_sdk
+#cgo CFLAGS: -I${SRCDIR}/../../third_party/agora_rtm_sdk_c/agora_rtm_sdk-prefix/src/agora_rtm_sdk/rtm/sdk/high_level_api/include
+#cgo LDFLAGS: -L${SRCDIR}/../../third_party/agora_rtm_sdk_c/agora_rtm_sdk-prefix/src/agora_rtm_sdk/rtm/sdk -lagora_rtm_sdk
 
 #include "C_IAgoraRtmService.h"
 #include <stdlib.h>

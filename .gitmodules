@@ -1,0 +1,3 @@
+[submodule "third_party/agora_rtm_sdk_c"]
+	path = third_party/agora_rtm_sdk_c
+	url = https://github.com/Lensual/agora_rtm_sdk_c
