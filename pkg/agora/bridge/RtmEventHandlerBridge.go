@@ -172,8 +172,8 @@ type IRtmEventHandlerBridgeHandler interface {
 }
 
 type RtmEventHandlerBridge struct {
+	handler IRtmEventHandlerBridgeHandler
 	cBridge *C.C_RtmEventHandlerBridge
-	pinner  runtime.Pinner
 }
 
 func (b *RtmEventHandlerBridge) ToAgoraEventHandler() *agora.IRtmEventHandler {
@@ -182,7 +182,6 @@ func (b *RtmEventHandlerBridge) ToAgoraEventHandler() *agora.IRtmEventHandler {
 
 func (b *RtmEventHandlerBridge) Delete() {
 	C.C_RtmEventHandlerBridge_Delete(unsafe.Pointer(b))
-	b.pinner.Unpin()
 	b.cBridge = nil
 }
 
@@ -190,8 +189,7 @@ var pinner runtime.Pinner
 
 func NewRtmEventHandlerBridge(handler IRtmEventHandlerBridgeHandler) *RtmEventHandlerBridge {
 	b := RtmEventHandlerBridge{}
-	userData := unsafe.Pointer(&handler)
-	b.pinner.Pin(userData)
+	userData := unsafe.Pointer(&b)
 	b.cBridge = (*C.C_RtmEventHandlerBridge)(C.C_RtmEventHandlerBridge_New(
 		C.C_RtmEventHandlerBridge_Callbacks{
 			onMessageEvent:                C.C_RtmEventHandlerBridge_onMessageEvent(C.cgo_RtmEventHandlerBridge_onMessageEvent),
@@ -234,6 +232,7 @@ func NewRtmEventHandlerBridge(handler IRtmEventHandlerBridgeHandler) *RtmEventHa
 		},
 		userData,
 	))
+	b.handler = handler
 	return &b
 }
 
@@ -245,8 +244,8 @@ func cgo_RtmEventHandlerBridge_onMessageEvent(_ *C.C_RtmEventHandlerBridge, user
 		return
 	}
 
-	handler := *(*IRtmEventHandlerBridgeHandler)(userData)
-	handler.OnMessageEvent((*agora.MessageEvent)(unsafe.Pointer(event)))
+	bridge := (*RtmEventHandlerBridge)(userData)
+	bridge.handler.OnMessageEvent((*agora.MessageEvent)(unsafe.Pointer(event)))
 }
 
 //export cgo_RtmEventHandlerBridge_onPresenceEvent
@@ -257,8 +256,8 @@ func cgo_RtmEventHandlerBridge_onPresenceEvent(_ *C.C_RtmEventHandlerBridge, use
 		return
 	}
 
-	handler := *(*IRtmEventHandlerBridgeHandler)(userData)
-	handler.OnPresenceEvent((*agora.PresenceEvent)(unsafe.Pointer(event)))
+	bridge := (*RtmEventHandlerBridge)(userData)
+	bridge.handler.OnPresenceEvent((*agora.PresenceEvent)(unsafe.Pointer(event)))
 }
 
 //export cgo_RtmEventHandlerBridge_onTopicEvent
@@ -269,8 +268,8 @@ func cgo_RtmEventHandlerBridge_onTopicEvent(_ *C.C_RtmEventHandlerBridge, userDa
 		return
 	}
 
-	handler := *(*IRtmEventHandlerBridgeHandler)(userData)
-	handler.OnTopicEvent((*agora.TopicEvent)(unsafe.Pointer(event)))
+	bridge := (*RtmEventHandlerBridge)(userData)
+	bridge.handler.OnTopicEvent((*agora.TopicEvent)(unsafe.Pointer(event)))
 }
 
 //export cgo_RtmEventHandlerBridge_onLockEvent
@@ -287,8 +286,8 @@ func cgo_RtmEventHandlerBridge_onStorageEvent(_ *C.C_RtmEventHandlerBridge, user
 		return
 	}
 
-	handler := *(*IRtmEventHandlerBridgeHandler)(userData)
-	handler.OnStorageEvent((*agora.StorageEvent)(unsafe.Pointer(event)))
+	bridge := (*RtmEventHandlerBridge)(userData)
+	bridge.handler.OnStorageEvent((*agora.StorageEvent)(unsafe.Pointer(event)))
 }
 
 //export cgo_RtmEventHandlerBridge_onJoinResult
@@ -299,8 +298,8 @@ func cgo_RtmEventHandlerBridge_onJoinResult(_ *C.C_RtmEventHandlerBridge, userDa
 		return
 	}
 
-	handler := *(*IRtmEventHandlerBridgeHandler)(userData)
-	handler.OnJoinResult(
+	bridge := (*RtmEventHandlerBridge)(userData)
+	bridge.handler.OnJoinResult(
 		uint64(requestId),
 		C.GoString(channelName),
 		C.GoString(userId),
@@ -316,8 +315,8 @@ func cgo_RtmEventHandlerBridge_onLeaveResult(_ *C.C_RtmEventHandlerBridge, userD
 		return
 	}
 
-	handler := *(*IRtmEventHandlerBridgeHandler)(userData)
-	handler.OnLeaveResult(
+	bridge := (*RtmEventHandlerBridge)(userData)
+	bridge.handler.OnLeaveResult(
 		uint64(requestId),
 		C.GoString(channelName),
 		C.GoString(userId),
@@ -333,8 +332,8 @@ func cgo_RtmEventHandlerBridge_onJoinTopicResult(_ *C.C_RtmEventHandlerBridge, u
 		return
 	}
 
-	handler := *(*IRtmEventHandlerBridgeHandler)(userData)
-	handler.OnJoinTopicResult(
+	bridge := (*RtmEventHandlerBridge)(userData)
+	bridge.handler.OnJoinTopicResult(
 		uint64(requestId),
 		C.GoString(channelName),
 		C.GoString(userId),
@@ -352,8 +351,8 @@ func cgo_RtmEventHandlerBridge_onLeaveTopicResult(_ *C.C_RtmEventHandlerBridge, 
 		return
 	}
 
-	handler := *(*IRtmEventHandlerBridgeHandler)(userData)
-	handler.OnLeaveTopicResult(
+	bridge := (*RtmEventHandlerBridge)(userData)
+	bridge.handler.OnLeaveTopicResult(
 		uint64(requestId),
 		C.GoString(channelName),
 		C.GoString(userId),
@@ -371,8 +370,8 @@ func cgo_RtmEventHandlerBridge_onSubscribeTopicResult(_ *C.C_RtmEventHandlerBrid
 		return
 	}
 
-	handler := *(*IRtmEventHandlerBridgeHandler)(userData)
-	handler.OnSubscribeTopicResult(
+	bridge := (*RtmEventHandlerBridge)(userData)
+	bridge.handler.OnSubscribeTopicResult(
 		uint64(requestId),
 		C.GoString(channelName),
 		C.GoString(userId),
@@ -391,8 +390,8 @@ func cgo_RtmEventHandlerBridge_onConnectionStateChanged(_ *C.C_RtmEventHandlerBr
 		return
 	}
 
-	handler := *(*IRtmEventHandlerBridgeHandler)(userData)
-	handler.OnConnectionStateChanged(
+	bridge := (*RtmEventHandlerBridge)(userData)
+	bridge.handler.OnConnectionStateChanged(
 		C.GoString(channelName),
 		agora.RTM_CONNECTION_STATE(state),
 		agora.RTM_CONNECTION_CHANGE_REASON(reason),
@@ -407,8 +406,8 @@ func cgo_RtmEventHandlerBridge_onTokenPrivilegeWillExpire(_ *C.C_RtmEventHandler
 		return
 	}
 
-	handler := *(*IRtmEventHandlerBridgeHandler)(userData)
-	handler.OnTokenPrivilegeWillExpire(
+	bridge := (*RtmEventHandlerBridge)(userData)
+	bridge.handler.OnTokenPrivilegeWillExpire(
 		C.GoString(channelName),
 	)
 }
@@ -421,8 +420,8 @@ func cgo_RtmEventHandlerBridge_onSubscribeResult(_ *C.C_RtmEventHandlerBridge, u
 		return
 	}
 
-	handler := *(*IRtmEventHandlerBridgeHandler)(userData)
-	handler.OnSubscribeResult(
+	bridge := (*RtmEventHandlerBridge)(userData)
+	bridge.handler.OnSubscribeResult(
 		uint64(requestId),
 		C.GoString(channelName),
 		agora.RTM_ERROR_CODE(errorCode),
@@ -437,8 +436,8 @@ func cgo_RtmEventHandlerBridge_onPublishResult(_ *C.C_RtmEventHandlerBridge, use
 		return
 	}
 
-	handler := *(*IRtmEventHandlerBridgeHandler)(userData)
-	handler.OnPublishResult(
+	bridge := (*RtmEventHandlerBridge)(userData)
+	bridge.handler.OnPublishResult(
 		uint64(requestId),
 		agora.RTM_ERROR_CODE(errorCode),
 	)
@@ -452,8 +451,8 @@ func cgo_RtmEventHandlerBridge_onLoginResult(_ *C.C_RtmEventHandlerBridge, userD
 		return
 	}
 
-	handler := *(*IRtmEventHandlerBridgeHandler)(userData)
-	handler.OnLoginResult(
+	bridge := (*RtmEventHandlerBridge)(userData)
+	bridge.handler.OnLoginResult(
 		agora.RTM_ERROR_CODE(errorCode),
 	)
 }
@@ -466,8 +465,8 @@ func cgo_RtmEventHandlerBridge_onSetChannelMetadataResult(_ *C.C_RtmEventHandler
 		return
 	}
 
-	handler := *(*IRtmEventHandlerBridgeHandler)(userData)
-	handler.OnSetChannelMetadataResult(
+	bridge := (*RtmEventHandlerBridge)(userData)
+	bridge.handler.OnSetChannelMetadataResult(
 		uint64(requestId),
 		C.GoString(channelName),
 		agora.RTM_CHANNEL_TYPE(channelType),
@@ -483,8 +482,8 @@ func cgo_RtmEventHandlerBridge_onUpdateChannelMetadataResult(_ *C.C_RtmEventHand
 		return
 	}
 
-	handler := *(*IRtmEventHandlerBridgeHandler)(userData)
-	handler.OnUpdateChannelMetadataResult(
+	bridge := (*RtmEventHandlerBridge)(userData)
+	bridge.handler.OnUpdateChannelMetadataResult(
 		uint64(requestId),
 		C.GoString(channelName),
 		agora.RTM_CHANNEL_TYPE(channelType),
@@ -500,8 +499,8 @@ func cgo_RtmEventHandlerBridge_onRemoveChannelMetadataResult(_ *C.C_RtmEventHand
 		return
 	}
 
-	handler := *(*IRtmEventHandlerBridgeHandler)(userData)
-	handler.OnRemoveChannelMetadataResult(
+	bridge := (*RtmEventHandlerBridge)(userData)
+	bridge.handler.OnRemoveChannelMetadataResult(
 		uint64(requestId),
 		C.GoString(channelName),
 		agora.RTM_CHANNEL_TYPE(channelType),
@@ -517,8 +516,8 @@ func cgo_RtmEventHandlerBridge_onGetChannelMetadataResult(_ *C.C_RtmEventHandler
 		return
 	}
 
-	handler := *(*IRtmEventHandlerBridgeHandler)(userData)
-	handler.OnGetChannelMetadataResult(
+	bridge := (*RtmEventHandlerBridge)(userData)
+	bridge.handler.OnGetChannelMetadataResult(
 		uint64(requestId),
 		C.GoString(channelName),
 		agora.RTM_CHANNEL_TYPE(channelType),
@@ -535,8 +534,8 @@ func cgo_RtmEventHandlerBridge_onSetUserMetadataResult(_ *C.C_RtmEventHandlerBri
 		return
 	}
 
-	handler := *(*IRtmEventHandlerBridgeHandler)(userData)
-	handler.OnSetUserMetadataResult(
+	bridge := (*RtmEventHandlerBridge)(userData)
+	bridge.handler.OnSetUserMetadataResult(
 		uint64(requestId),
 		C.GoString(userId),
 		agora.RTM_ERROR_CODE(errorCode),
@@ -551,8 +550,8 @@ func cgo_RtmEventHandlerBridge_onUpdateUserMetadataResult(_ *C.C_RtmEventHandler
 		return
 	}
 
-	handler := *(*IRtmEventHandlerBridgeHandler)(userData)
-	handler.OnUpdateUserMetadataResult(
+	bridge := (*RtmEventHandlerBridge)(userData)
+	bridge.handler.OnUpdateUserMetadataResult(
 		uint64(requestId),
 		C.GoString(userId),
 		agora.RTM_ERROR_CODE(errorCode),
@@ -567,8 +566,8 @@ func cgo_RtmEventHandlerBridge_onRemoveUserMetadataResult(_ *C.C_RtmEventHandler
 		return
 	}
 
-	handler := *(*IRtmEventHandlerBridgeHandler)(userData)
-	handler.OnRemoveUserMetadataResult(
+	bridge := (*RtmEventHandlerBridge)(userData)
+	bridge.handler.OnRemoveUserMetadataResult(
 		uint64(requestId),
 		C.GoString(userId),
 		agora.RTM_ERROR_CODE(errorCode),
@@ -583,8 +582,8 @@ func cgo_RtmEventHandlerBridge_onGetUserMetadataResult(_ *C.C_RtmEventHandlerBri
 		return
 	}
 
-	handler := *(*IRtmEventHandlerBridgeHandler)(userData)
-	handler.OnGetUserMetadataResult(
+	bridge := (*RtmEventHandlerBridge)(userData)
+	bridge.handler.OnGetUserMetadataResult(
 		uint64(requestId),
 		C.GoString(userId),
 		(*agora.IMetadata)(data),
@@ -600,8 +599,8 @@ func cgo_RtmEventHandlerBridge_onSubscribeUserMetadataResult(_ *C.C_RtmEventHand
 		return
 	}
 
-	handler := *(*IRtmEventHandlerBridgeHandler)(userData)
-	handler.OnSubscribeUserMetadataResult(
+	bridge := (*RtmEventHandlerBridge)(userData)
+	bridge.handler.OnSubscribeUserMetadataResult(
 		uint64(requestId),
 		C.GoString(userId),
 		agora.RTM_ERROR_CODE(errorCode),
@@ -616,8 +615,8 @@ func cgo_RtmEventHandlerBridge_onSetLockResult(_ *C.C_RtmEventHandlerBridge, use
 		return
 	}
 
-	handler := *(*IRtmEventHandlerBridgeHandler)(userData)
-	handler.OnSetLockResult(
+	bridge := (*RtmEventHandlerBridge)(userData)
+	bridge.handler.OnSetLockResult(
 		uint64(requestId),
 		C.GoString(channelName),
 		agora.RTM_CHANNEL_TYPE(channelType),
@@ -634,8 +633,8 @@ func cgo_RtmEventHandlerBridge_onRemoveLockResult(_ *C.C_RtmEventHandlerBridge, 
 		return
 	}
 
-	handler := *(*IRtmEventHandlerBridgeHandler)(userData)
-	handler.OnRemoveLockResult(
+	bridge := (*RtmEventHandlerBridge)(userData)
+	bridge.handler.OnRemoveLockResult(
 		uint64(requestId),
 		C.GoString(channelName),
 		agora.RTM_CHANNEL_TYPE(channelType),
@@ -652,8 +651,8 @@ func cgo_RtmEventHandlerBridge_onReleaseLockResult(_ *C.C_RtmEventHandlerBridge,
 		return
 	}
 
-	handler := *(*IRtmEventHandlerBridgeHandler)(userData)
-	handler.OnReleaseLockResult(
+	bridge := (*RtmEventHandlerBridge)(userData)
+	bridge.handler.OnReleaseLockResult(
 		uint64(requestId),
 		C.GoString(channelName),
 		agora.RTM_CHANNEL_TYPE(channelType),
@@ -670,8 +669,8 @@ func cgo_RtmEventHandlerBridge_onAcquireLockResult(_ *C.C_RtmEventHandlerBridge,
 		return
 	}
 
-	handler := *(*IRtmEventHandlerBridgeHandler)(userData)
-	handler.OnAcquireLockResult(
+	bridge := (*RtmEventHandlerBridge)(userData)
+	bridge.handler.OnAcquireLockResult(
 		uint64(requestId),
 		C.GoString(channelName),
 		agora.RTM_CHANNEL_TYPE(channelType),
@@ -689,8 +688,8 @@ func cgo_RtmEventHandlerBridge_onRevokeLockResult(_ *C.C_RtmEventHandlerBridge, 
 		return
 	}
 
-	handler := *(*IRtmEventHandlerBridgeHandler)(userData)
-	handler.OnRevokeLockResult(
+	bridge := (*RtmEventHandlerBridge)(userData)
+	bridge.handler.OnRevokeLockResult(
 		uint64(requestId),
 		C.GoString(channelName),
 		agora.RTM_CHANNEL_TYPE(channelType),
@@ -707,8 +706,8 @@ func cgo_RtmEventHandlerBridge_onGetLocksResult(_ *C.C_RtmEventHandlerBridge, us
 		return
 	}
 
-	handler := *(*IRtmEventHandlerBridgeHandler)(userData)
-	handler.OnGetLocksResult(
+	bridge := (*RtmEventHandlerBridge)(userData)
+	bridge.handler.OnGetLocksResult(
 		uint64(requestId),
 		C.GoString(channelName),
 		agora.RTM_CHANNEL_TYPE(channelType),
@@ -726,8 +725,8 @@ func cgo_RtmEventHandlerBridge_onWhoNowResult(_ *C.C_RtmEventHandlerBridge, user
 		return
 	}
 
-	handler := *(*IRtmEventHandlerBridgeHandler)(userData)
-	handler.OnWhoNowResult(
+	bridge := (*RtmEventHandlerBridge)(userData)
+	bridge.handler.OnWhoNowResult(
 		uint64(requestId),
 		(*agora.UserState)(unsafe.Pointer(userStateList)),
 		uint(count),
@@ -744,8 +743,8 @@ func cgo_RtmEventHandlerBridge_onGetOnlineUsersResult(_ *C.C_RtmEventHandlerBrid
 		return
 	}
 
-	handler := *(*IRtmEventHandlerBridgeHandler)(userData)
-	handler.OnGetOnlineUsersResult(
+	bridge := (*RtmEventHandlerBridge)(userData)
+	bridge.handler.OnGetOnlineUsersResult(
 		uint64(requestId),
 		(*agora.UserState)(unsafe.Pointer(userStateList)),
 		uint(count),
@@ -762,8 +761,8 @@ func cgo_RtmEventHandlerBridge_onWhereNowResult(_ *C.C_RtmEventHandlerBridge, us
 		return
 	}
 
-	handler := *(*IRtmEventHandlerBridgeHandler)(userData)
-	handler.OnWhereNowResult(
+	bridge := (*RtmEventHandlerBridge)(userData)
+	bridge.handler.OnWhereNowResult(
 		uint64(requestId),
 		(*agora.ChannelInfo)(unsafe.Pointer(channels)),
 		uint(count),
@@ -779,8 +778,8 @@ func cgo_RtmEventHandlerBridge_onGetUserChannelsResult(_ *C.C_RtmEventHandlerBri
 		return
 	}
 
-	handler := *(*IRtmEventHandlerBridgeHandler)(userData)
-	handler.OnGetUserChannelsResult(
+	bridge := (*RtmEventHandlerBridge)(userData)
+	bridge.handler.OnGetUserChannelsResult(
 		uint64(requestId),
 		(*agora.ChannelInfo)(unsafe.Pointer(channels)),
 		uint(count),
@@ -796,8 +795,8 @@ func cgo_RtmEventHandlerBridge_onPresenceSetStateResult(_ *C.C_RtmEventHandlerBr
 		return
 	}
 
-	handler := *(*IRtmEventHandlerBridgeHandler)(userData)
-	handler.OnPresenceSetStateResult(
+	bridge := (*RtmEventHandlerBridge)(userData)
+	bridge.handler.OnPresenceSetStateResult(
 		uint64(requestId),
 		agora.RTM_ERROR_CODE(errorCode),
 	)
@@ -811,8 +810,8 @@ func cgo_RtmEventHandlerBridge_onPresenceRemoveStateResult(_ *C.C_RtmEventHandle
 		return
 	}
 
-	handler := *(*IRtmEventHandlerBridgeHandler)(userData)
-	handler.OnPresenceRemoveStateResult(
+	bridge := (*RtmEventHandlerBridge)(userData)
+	bridge.handler.OnPresenceRemoveStateResult(
 		uint64(requestId),
 		agora.RTM_ERROR_CODE(errorCode),
 	)
@@ -826,8 +825,8 @@ func cgo_RtmEventHandlerBridge_onPresenceGetStateResult(_ *C.C_RtmEventHandlerBr
 		return
 	}
 
-	handler := *(*IRtmEventHandlerBridgeHandler)(userData)
-	handler.OnPresenceGetStateResult(
+	bridge := (*RtmEventHandlerBridge)(userData)
+	bridge.handler.OnPresenceGetStateResult(
 		uint64(requestId),
 		(*agora.UserState)(unsafe.Pointer(state)),
 		agora.RTM_ERROR_CODE(errorCode),
