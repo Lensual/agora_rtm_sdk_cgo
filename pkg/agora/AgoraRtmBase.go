@@ -1097,7 +1097,7 @@ func NewTopicInfo() *TopicInfo {
 	return (*TopicInfo)(C.C_TopicInfo_New())
 }
 
-func (this_ *TopicInfo) TopicInfo_Delete() {
+func (this_ *TopicInfo) Delete() {
 	C.C_TopicInfo_Delete((*C.struct_C_TopicInfo)(this_))
 }
 
@@ -1150,7 +1150,7 @@ func (this_ *StateItem) SetValue(value string) {
 func NewStateItem() *StateItem {
 	return (*StateItem)(C.C_StateItem_New())
 }
-func (this_ *StateItem) StateItem_Delete() {
+func (this_ *StateItem) Delete() {
 	C.C_StateItem_Delete((*C.struct_C_StateItem)(this_))
 }
 
@@ -1354,7 +1354,7 @@ func NewSubscribeOptions() *SubscribeOptions {
 	return (*SubscribeOptions)(C.C_SubscribeOptions_New())
 }
 
-func (this_ *SubscribeOptions) SubscribeOptions_Delete() {
+func (this_ *SubscribeOptions) Delete() {
 	C.C_SubscribeOptions_Delete((*C.struct_C_SubscribeOptions)(this_))
 }
 

@@ -184,7 +184,7 @@ func (this_ *RtmConfig) GetEncryptionConfig() RtmEncryptionConfig {
 /**
  * The config for encryption setting
  */
-func (this_ *RtmConfig) SetRtmEncryptionConfig(encryptionConfig RtmEncryptionConfig) {
+func (this_ *RtmConfig) SetEncryptionConfig(encryptionConfig RtmEncryptionConfig) {
 	this_.encryptionConfig = (C.struct_C_RtmEncryptionConfig)(encryptionConfig)
 }
 
