@@ -181,7 +181,8 @@ func (b *RtmEventHandlerBridge) ToAgoraEventHandler() *agora.IRtmEventHandler {
 }
 
 func (b *RtmEventHandlerBridge) Delete() {
-	C.C_RtmEventHandlerBridge_Delete(unsafe.Pointer(b))
+	C.C_RtmEventHandlerBridge_Delete(unsafe.Pointer(b.cBridge))
+	b.handler = nil
 	b.cBridge = nil
 }
 
